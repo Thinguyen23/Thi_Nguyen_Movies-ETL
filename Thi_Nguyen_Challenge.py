@@ -8,13 +8,6 @@ import psycopg2
 from config import db_password
 import time
 
-# Load data assuming data remain the same format
-file_dir = 'C:/Users/Thi/desktop/class/Thi_Nguyen_Movies-ETL'
-with open(f'{file_dir}/wikipedia-movies.json', mode='r') as file:
-        wiki_movies_raw = json.load(file)
-kaggle_metadata = pd.read_csv(f'{file_dir}/movies_metadata.csv', low_memory=False)
-ratings = pd.read_csv(f'{file_dir}/ratings.csv', low_memory=False)
-
 # Clean movie function
 def clean_movie(movie):
         movie = dict(movie) 
@@ -100,6 +93,12 @@ def parse_dollars(s):
             return np.nan
 # CHALLENGE: ETL function
 def movies_ETL(wiki_data, metadata, rating_data):
+    # Load data assuming data remain the same format
+    file_dir = 'C:/Users/Thi/desktop/class/Thi_Nguyen_Movies-ETL'
+    with open(f'{file_dir}/{wiki_data}.json', mode='r') as file:
+            wiki_data = json.load(file)
+    metadata = pd.read_csv(f'{file_dir}/({metadata}.csv', low_memory=False)
+    rating_data = pd.read_csv(f'{file_dir}/{rating_data}.csv', low_memory=False)
     
     # Clean wiki_data
     wiki_movies = [movie for movie in wiki_data if ('Director' in movie or 'Directed by' in movie) and 'imdb_link' in movie and 'No. of episodes' not in movie]  
@@ -208,10 +207,10 @@ def movies_ETL(wiki_data, metadata, rating_data):
     movies_df.to_sql(name='movies', con=engine, if_exists='replace')
     
     # replace the rating records in ratings table
-    ratings_df = pd.read_csv(f'{file_dir}/ratings.csv', low_memory=False)
-    ratings_copy= ratings_df.loc[ratings_df['rating']==1.5]
-    ratings_copy.to_sql(name='ratings', con=engine, if_exists='replace', chunksize=1000000)
+    ratings_df = pd.read_csv(f'{file_dir}/{rating_data}.csv', low_memory=False)
+    ratings_df.to_sql(name='ratings', con=engine, if_exists='replace', chunksize=1000000)
     
     return movies_df
+
 # Run ETL function
-movies_ETL(wiki_movies_raw, kaggle_metadata, ratings)
+movies_ETL('wikipedia-movies', 'movies_metadata', 'ratings')
